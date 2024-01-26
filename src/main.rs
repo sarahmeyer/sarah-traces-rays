@@ -5,14 +5,14 @@ mod ray;
 mod sphere;
 mod vec;
 
-use material::{Lambertian, Metal};
+use material::{Dielectric, Lambertian, Metal};
 use rand::Rng;
 use ray::Ray;
 use std::{
     io::{stderr, Write},
     rc::Rc,
 };
-use vec::{Color, Point3, Vec3};
+use vec::{Color, Point3};
 
 use camera::Camera;
 use hit::{Hit, World};
@@ -42,23 +42,26 @@ fn main() {
     const IMAGE_WIDTH: u64 = 256;
     const IMAGE_HEIGHT: u64 = ((IMAGE_WIDTH as f64) / ASPECT_RATIO) as u64;
     const SAMPLES_PER_PIXEL: u64 = 100;
-    const MAX_DEPTH: u64 = 5;
+    const MAX_DEPTH: u64 = 10;
 
     // world
     let mut world = World::new();
     let mat_ground = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
-    let mat_center = Rc::new(Lambertian::new(Color::new(0.7, 0.3, 0.3)));
-    let mat_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
-    let mat_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
+    let mat_center = Rc::new(Lambertian::new(Color::new(0.1, 0.2, 0.5)));
+    let mat_left = Rc::new(Dielectric::new(1.5));
+    let mat_left_inner = Rc::new(Dielectric::new(1.5));
+    let mat_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
 
     let sphere_ground = Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground);
     let sphere_center = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center);
     let sphere_left = Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, mat_left);
+    let sphere_left_inner = Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.4, mat_left_inner);
     let sphere_right = Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, mat_right);
 
     world.push(Box::new(sphere_ground));
     world.push(Box::new(sphere_center));
     world.push(Box::new(sphere_left));
+    world.push(Box::new(sphere_left_inner));
     world.push(Box::new(sphere_right));
 
     // camera
