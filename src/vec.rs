@@ -226,3 +226,42 @@ impl Display for Vec3 {
         write!(f, "({}, {}, {})", self[0], self[1], self[2])
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    // the sum of two vectors is the vector having coordinates
+    // that are the sums of each pair of values in the two vectors
+    #[test]
+    pub fn vec3s_can_be_added() {
+        let a = 1.0;
+        let b = -2.0;
+        let c = -7.0;
+        let d = 3.0;
+        let e = 11.0;
+        let f = 17.0;
+        let u = Vec3::new(a, b, c);
+        let v = Vec3::new(d, e, f);
+
+        assert_eq!((u + v).e[0], a + d);
+        assert_eq!((u + v).e[1], b + e);
+        assert_eq!((u + v).e[2], c + f);
+    }
+    #[test]
+    // the difference of two vectors is the vector having coordinates
+    // that are the differences of each pair of values in the two vectors
+    pub fn vec3s_can_be_subtracted() {
+        let a = 1.0;
+        let b = -2.0;
+        let c = -7.0;
+        let d = 3.0;
+        let e = 11.0;
+        let f = 17.0;
+        let u = Vec3::new(a, b, c);
+        let v = Vec3::new(d, e, f);
+
+        assert_eq!((u - v).e[0], a - d);
+        assert_eq!((u - v).e[1], b - e);
+        assert_eq!((u - v).e[2], c - f);
+    }
+}
