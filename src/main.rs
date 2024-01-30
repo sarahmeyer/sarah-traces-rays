@@ -8,8 +8,9 @@ mod vec;
 use rand::Rng;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use serde_json::from_str;
-use std::{env, fs::File, io::BufReader};
+use std::io::BufReader;
+use std::io::Write;
+use std::{env, fs::File};
 
 use material::{Dielectric, Lambertian, Metal};
 use ray::Ray;
@@ -141,9 +142,10 @@ fn main() {
         dist_to_focus,
     );
 
-    println!("P3");
-    println!("{} {}", preset.image_width, image_height);
-    println!("255");
+    let mut output = File::create(&args[2]).unwrap();
+    writeln!(output, "P3").unwrap();
+    writeln!(output, "{} {}", preset.image_width, image_height).unwrap();
+    writeln!(output, "255").unwrap();
 
     for j in (0..image_height).rev() {
         eprintln!("Scanlines remaining: {}", j + 1);
@@ -170,7 +172,12 @@ fn main() {
             .collect();
 
         for pixel_color in scanline {
-            println!("{}", pixel_color.format_color(preset.samples_per_pixel));
+            writeln!(
+                output,
+                "{}",
+                pixel_color.format_color(preset.samples_per_pixel)
+            )
+            .unwrap();
         }
     }
     eprintln!("Done.");
