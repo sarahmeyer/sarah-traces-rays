@@ -5,6 +5,7 @@ mod ray;
 mod sphere;
 mod vec;
 
+use camera::CameraSettings;
 use rand::Rng;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -16,18 +17,19 @@ use material::{Dielectric, Lambertian, Metal};
 use ray::Ray;
 use rayon::iter::IntoParallelIterator;
 use std::sync::Arc;
-use vec::{Color, Point3, Vec3};
+use vec::{Color, Point3};
 
 use camera::Camera;
 use hit::{Hit, World};
 use sphere::Sphere;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Preset {
     aspect_ratio: f64,
     image_width: u64,
     samples_per_pixel: u64,
     max_depth: u64,
+    camera: CameraSettings,
 }
 
 fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
@@ -108,15 +110,14 @@ fn load_preset_from_file(path_to_file: &str) -> Preset {
     let file = File::open(path_to_file).unwrap();
     let reader = BufReader::new(file);
 
-    // Read the JSON contents of the file as an instance of `User`.
-    let u = serde_json::from_reader(reader).unwrap();
+    let u: Preset = serde_json::from_reader(reader).unwrap();
     u
 }
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let preset = load_preset_from_file(&args[1]);
+    let preset: Preset = load_preset_from_file(&args[1]);
 
     // image
     let image_height: u64 = ((preset.image_width as f64) / preset.aspect_ratio) as u64;
@@ -124,23 +125,7 @@ fn main() {
     // World
     let world = random_scene();
 
-    // Camera
-    let lookfrom = Point3::new(2.0, 2.0, 3.0);
-    // let lookfrom = Point3::new(13.0, 2.0, 3.0);
-    let lookat = Point3::new(0.0, 0.0, 0.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 10.0;
-    let aperture = 0.1;
-
-    let cam = Camera::new(
-        lookfrom,
-        lookat,
-        vup,
-        20.0,
-        preset.aspect_ratio,
-        aperture,
-        dist_to_focus,
-    );
+    let cam = Camera::new(preset.camera);
 
     let mut output = File::create(&args[2]).unwrap();
     writeln!(output, "P3").unwrap();
