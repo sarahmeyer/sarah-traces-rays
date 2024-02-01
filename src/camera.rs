@@ -19,7 +19,7 @@ pub struct CameraSettings {
     lookat: Point3,
     vup: Vec3,
     vfov: f64,
-    aspect_ratio: f64,
+    pub aspect_ratio: f64,
     aperture: f64,
     focus_dist: f64,
 }
@@ -37,7 +37,7 @@ impl Camera {
 
         let h = settings.focus_dist * viewport_width * cu;
         let v = settings.focus_dist * viewport_height * cv;
-        let llc = settings.lookfrom - h / 2.0 - v / 2.0 - cw;
+        let llc = settings.lookfrom - h / 2.0 - v / 2.0 - settings.focus_dist * cw;
 
         Camera {
             origin: settings.lookfrom,
