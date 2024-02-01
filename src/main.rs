@@ -2,16 +2,19 @@ mod camera;
 mod hit;
 mod material;
 mod ray;
+mod rectanglexy;
 mod sphere;
 mod vec;
 
 use camera::CameraSettings;
 use rand::Rng;
 use rayon::prelude::*;
+use rectanglexy::RectangleXY;
 use serde::{Deserialize, Serialize};
 use std::io::BufReader;
 use std::io::Write;
 use std::{env, fs::File};
+use vec::Vec3;
 
 use material::{Dielectric, Lambertian, Metal};
 use ray::Ray;
@@ -25,7 +28,7 @@ use sphere::Sphere;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Preset {
-    aspect_ratio: f64,
+    // aspect_ratio: f64,
     image_width: u64,
     samples_per_pixel: u64,
     max_depth: u64,
@@ -49,10 +52,10 @@ fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
         (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
     }
 }
-
 fn random_scene() -> World {
     let mut rng = rand::thread_rng();
     let mut world = World::new();
+
     let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     let ground_sphere = Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_mat);
 
@@ -91,6 +94,15 @@ fn random_scene() -> World {
             }
         }
     }
+
+    let diffuse_mat = Arc::new(Dielectric::new(1.5));
+    let rect = RectangleXY::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(5.0, 5.0, 5.0),
+        diffuse_mat,
+    );
+    world.push(Box::new(rect));
+
     let mat1 = Arc::new(Dielectric::new(1.5));
     let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
@@ -120,7 +132,7 @@ fn main() {
     let preset: Preset = load_preset_from_file(&args[1]);
 
     // image
-    let image_height: u64 = ((preset.image_width as f64) / preset.aspect_ratio) as u64;
+    let image_height: u64 = ((preset.image_width as f64) / preset.camera.aspect_ratio) as u64;
 
     // World
     let world = random_scene();
