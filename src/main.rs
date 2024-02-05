@@ -3,7 +3,6 @@ mod hit;
 mod material;
 mod planes;
 mod ray;
-mod rectanglexy;
 mod sphere;
 mod vec;
 
@@ -11,7 +10,6 @@ use camera::CameraSettings;
 use planes::Plane;
 use rand::Rng;
 use rayon::prelude::*;
-use rectanglexy::RectangleXY;
 use serde::{Deserialize, Serialize};
 use std::io::BufReader;
 use std::io::Write;
@@ -50,15 +48,18 @@ fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
         }
     } else {
         let unit_direction = r.direction().normalized();
+        let background_color = Color::new(0.6, 0.75, 0.6);
+        // let background_color = Color::new(0.5, 0.7, 1.0);
         let t = 0.5 * (unit_direction.y() + 1.0);
-        (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
+        (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * background_color
     }
 }
 fn random_scene() -> World {
     let mut rng = rand::thread_rng();
     let mut world = World::new();
 
-    let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    // let ground_mat = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let ground_mat = Arc::new(Metal::new(Color::new(0.9, 0.6, 0.5), 0.1));
     let ground_sphere = Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_mat);
 
     world.push(Box::new(ground_sphere));
@@ -159,6 +160,28 @@ fn random_scene() -> World {
 
     // world.push(Box::new(sphere1));
     // world.push(Box::new(sphere2));
+    // world.push(Box::new(sphere3));
+    // let rect_mat1 = Arc::new(Dielectric::new(1.5));
+    // let rect = RectangleXY::new(
+    //     Vec3::new(0.0, 0.0, 0.0),
+    //     Vec3::new(5.0, 5.0, 5.0),
+    //     rect_mat1,
+    // );
+    // world.push(Box::new(rect));
+
+    // let mat1 = Arc::new(Dielectric::new(1.5));
+    // let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    // let mat2_copy = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    // let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+
+    // let sphere1 = Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, mat1);
+    // let sphere2 = Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, mat2);
+    // let sphere2_int = Sphere::new(Point3::new(-4.0, 1.0, 0.0), -0.99, mat2_copy);
+    // let sphere3 = Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, mat3);
+
+    // world.push(Box::new(sphere1));
+    // world.push(Box::new(sphere2));
+    // world.push(Box::new(sphere2_int));
     // world.push(Box::new(sphere3));
 
     world

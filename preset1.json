@@ -1,7 +1,7 @@
 {
-  "image_width": 300,
-  "samples_per_pixel": 10,
-  "max_depth": 5,
+  "image_width": 1200,
+  "samples_per_pixel": 500,
+  "max_depth": 10,
   "camera": {
     "lookfrom": {
       "e": [

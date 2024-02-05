@@ -1,26 +1,32 @@
 {
-  "aspect_ratio": 1.7777777778,
   "image_width": 300,
-  "samples_per_pixel": 100,
-  "max_depth": 2,
+  "samples_per_pixel": 40,
+  "max_depth": 5,
   "camera": {
-    "origin": [
-      2.0,
-      2.0,
-      3.0
-    ],
-    "lookat": [
-      13.0,
-      2.0,
-      3.0
-    ],
-    "vup": [
-      0.0,
-      1.0,
-      0.0
-    ],
+    "lookfrom": {
+      "e": [
+        13.0,
+        2.0,
+        3.0
+      ]
+    },
+    "lookat": {
+      "e": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "vup": {
+      "e": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
     "vfov": 20.0,
+    "aperture": 0.1,
     "focus_dist": 10.0,
-    "aperture": 1.0
+    "aspect_ratio": 1.7777777778
   }
 }
