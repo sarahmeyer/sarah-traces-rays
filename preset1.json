@@ -1,13 +1,13 @@
 {
-  "image_width": 600,
-  "samples_per_pixel": 100,
+  "image_width": 300,
+  "samples_per_pixel": 10,
   "max_depth": 5,
   "camera": {
     "lookfrom": {
       "e": [
         13.0,
-        2.0,
-        3.0
+        2.5,
+        4.0
       ]
     },
     "lookat": {

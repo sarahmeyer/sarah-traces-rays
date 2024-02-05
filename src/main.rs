@@ -1,12 +1,14 @@
 mod camera;
 mod hit;
 mod material;
+mod planes;
 mod ray;
 mod rectanglexy;
 mod sphere;
 mod vec;
 
 use camera::CameraSettings;
+use planes::Plane;
 use rand::Rng;
 use rayon::prelude::*;
 use rectanglexy::RectangleXY;
@@ -61,8 +63,8 @@ fn random_scene() -> World {
 
     world.push(Box::new(ground_sphere));
 
-    for a in -11..=11 {
-        for b in -11..=11 {
+    for a in -3..=7 {
+        for b in -3..=7 {
             let choose_mat: f64 = rng.gen();
             let center = Point3::new(
                 (a as f64) + rng.gen_range(0.0..0.9),
@@ -95,25 +97,69 @@ fn random_scene() -> World {
         }
     }
 
-    let diffuse_mat = Arc::new(Dielectric::new(1.5));
-    let rect = RectangleXY::new(
-        Vec3::new(0.0, 0.0, 0.0),
-        Vec3::new(5.0, 5.0, 5.0),
-        diffuse_mat,
-    );
-    world.push(Box::new(rect));
+    // let cube_mat = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
 
-    let mat1 = Arc::new(Dielectric::new(1.5));
-    let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-    let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+    // A cube is made of 6 sides. For simplicity, I will make these be perpendicular to the axes.
+    // {x, y, z}{min, max} are the bounding box for the rectangular prism that we are going to draw.
+    // todo probably should extract this function.
+    let xmin = 3.0;
+    let xmax = 4.0;
+    let ymin = 0.0;
+    let ymax = 1.0;
+    let zmin = -0.5;
+    let zmax = 0.5;
 
-    let sphere1 = Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, mat1);
-    let sphere2 = Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, mat2);
-    let sphere3 = Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, mat3);
+    // let cube_material = Arc::new(Lambertian::new(Color::new(0.2, 0.8, 0.2)));
+    let cube_material = Arc::new(Metal::new(Color::new(0.3, 0.2, 0.1), 0.0));
 
-    world.push(Box::new(sphere1));
-    world.push(Box::new(sphere2));
-    world.push(Box::new(sphere3));
+    world.push(Box::new(Plane::new(
+        Vec3::new(0.0, 0.0, 1.0),
+        Vec3::new(xmin, ymin, zmin),
+        Vec3::new(xmax, ymax, zmin),
+        cube_material.clone(),
+    )));
+    world.push(Box::new(Plane::new(
+        Vec3::new(0.0, 0.0, 1.0),
+        Vec3::new(xmin, ymin, zmax),
+        Vec3::new(xmax, ymax, zmax),
+        cube_material.clone(),
+    )));
+    world.push(Box::new(Plane::new(
+        Vec3::new(0.0, 1.0, 0.0),
+        Vec3::new(xmin, ymin, zmin),
+        Vec3::new(xmax, ymin, zmax),
+        cube_material.clone(),
+    )));
+    world.push(Box::new(Plane::new(
+        Vec3::new(0.0, 1.0, 0.0),
+        Vec3::new(xmin, ymax, zmin),
+        Vec3::new(xmax, ymax, zmax),
+        cube_material.clone(),
+    )));
+    world.push(Box::new(Plane::new(
+        Vec3::new(1.0, 0.0, 0.0),
+        Vec3::new(xmin, ymin, zmin),
+        Vec3::new(xmin, ymax, zmax),
+        cube_material.clone(),
+    )));
+    world.push(Box::new(Plane::new(
+        Vec3::new(1.0, 0.0, 0.0),
+        Vec3::new(xmax, ymin, zmin),
+        Vec3::new(xmax, ymax, zmax),
+        cube_material.clone(),
+    )));
+
+    // let mat1 = Arc::new(Dielectric::new(1.5));
+    // let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    // let mat3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+
+    // let sphere1 = Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, mat1);
+    // let sphere2 = Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, mat2);
+    // let sphere3 = Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, mat3);
+
+    // world.push(Box::new(sphere1));
+    // world.push(Box::new(sphere2));
+    // world.push(Box::new(sphere3));
 
     world
 }
