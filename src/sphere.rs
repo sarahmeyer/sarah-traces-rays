@@ -65,7 +65,7 @@ mod tests {
 
     #[test]
     fn sphere_hits_are_recorded() {
-        let mat_diffuse_green = Rc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
+        let mat_diffuse_green = Arc::new(Lambertian::new(Color::new(0.8, 0.8, 0.0)));
         let center = Point3::new(0.0, -100.5, -1.0);
         let sphere = Sphere::new(center, 100.0, mat_diffuse_green);
         // make two vectors, check their intersection points on the sphere
@@ -73,7 +73,7 @@ mod tests {
         if let Some(rec) = sphere.hit(&u, 0.001, f64::INFINITY) {
             assert_eq!(rec.p[0], 0.0);
             assert_eq!(rec.p[1], -100.5);
-            assert_eq!(rec.p[2], -101.1);
+            assert_eq!(rec.p[2], -101.0);
         } else {
             assert!(false);
         }
