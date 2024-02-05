@@ -288,4 +288,36 @@ mod tests {
         assert_eq!((u - v).e[1], b - e);
         assert_eq!((u - v).e[2], c - f);
     }
+
+    #[test]
+    pub fn vec3s_dot_product() {
+        let a = 1.0;
+        let b = -2.0;
+        let c = 37.0;
+        let d = 3.0;
+        let e = 11.0;
+        let f = 17.0;
+        let u = Vec3::new(a, b, c);
+        let v = Vec3::new(d, e, f);
+
+        let dotted = u.dot(v);
+        assert_eq!(dotted, a * d + b * e + c * f)
+    }
+
+    #[test]
+    pub fn vec3s_cross_product() {
+        let a = 1.0;
+        let b = -2.0;
+        let c = -7.0;
+        let d = 3.0;
+        let e = 11.0;
+        let f = 17.0;
+        let u = Vec3::new(a, b, c);
+        let v = Vec3::new(d, e, f);
+
+        let crossed = u.cross(v);
+        assert_eq!(crossed[0], b * f - c * e);
+        assert_eq!(crossed[1], c * d - a * f);
+        assert_eq!(crossed[2], a * e - b * d);
+    }
 }
