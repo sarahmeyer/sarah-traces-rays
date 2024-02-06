@@ -1,4 +1,4 @@
-use std::{num::NonZeroI128, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     hit::{Hit, HitRecord},

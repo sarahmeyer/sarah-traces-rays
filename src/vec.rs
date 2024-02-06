@@ -5,9 +5,9 @@ use std::ops::{
 };
 
 use rand::Rng;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Clone, Copy, Deserialize, Serialize, Debug)]
+#[derive(Clone, Copy, Deserialize)]
 pub struct Vec3 {
     e: [f64; 3],
 }

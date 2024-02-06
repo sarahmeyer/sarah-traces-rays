@@ -1,16 +1,16 @@
 mod camera;
 mod hit;
 mod material;
-mod planes;
+mod plane;
 mod ray;
 mod sphere;
 mod vec;
 
 use camera::CameraSettings;
-use planes::Plane;
+use plane::Plane;
 use rand::Rng;
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::io::BufReader;
 use std::io::Write;
 use std::{env, fs::File};
@@ -26,13 +26,42 @@ use camera::Camera;
 use hit::{Hit, World};
 use sphere::Sphere;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize)]
 struct Preset {
     // aspect_ratio: f64,
     image_width: u64,
     samples_per_pixel: u64,
     max_depth: u64,
     camera: CameraSettings,
+    scene: Option<SceneSettings>,
+}
+
+#[derive(Deserialize)]
+enum MaterialSettings {
+    Dielectric(Dielectric),
+    Lambertian(Lambertian),
+    Metal(Metal),
+}
+
+#[derive(Deserialize)]
+struct SceneSettings {
+    spheres: Option<Vec<SphereSettings>>,
+    planes: Option<Vec<PlaneSettings>>,
+}
+
+#[derive(Deserialize)]
+struct SphereSettings {
+    center: Point3,
+    radius: f64,
+    // material: MaterialSettings,
+}
+
+#[derive(Deserialize)]
+struct PlaneSettings {
+    point1: Point3,
+    point2: Point3,
+    normal: Vec3,
+    material: MaterialSettings,
 }
 
 fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
@@ -187,6 +216,27 @@ fn random_scene() -> World {
     world
 }
 
+fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> World {
+    if scene_settings.is_some() {
+        let scene_settings = scene_settings.as_ref().unwrap();
+        let mut world = World::new();
+        if scene_settings.spheres.is_some() {
+            let sphere_settings = scene_settings.spheres.as_ref().unwrap();
+            for sphere_setting in sphere_settings {
+                let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+                world.push(Box::new(Sphere::new(
+                    sphere_setting.center,
+                    sphere_setting.radius,
+                    mat2,
+                )));
+            }
+        }
+        world
+    } else {
+        random_scene()
+    }
+}
+
 fn load_preset_from_file(path_to_file: &str) -> Preset {
     let file = File::open(path_to_file).unwrap();
     let reader = BufReader::new(file);
@@ -204,9 +254,10 @@ fn main() {
     let image_height: u64 = ((preset.image_width as f64) / preset.camera.aspect_ratio) as u64;
 
     // World
-    let world = random_scene();
+    // let world = random_scene();
+    let world = construct_scene_from_settings(&preset.scene);
 
-    let cam = Camera::new(preset.camera);
+    let cam = Camera::new(&preset.camera);
 
     let mut output = File::create(&args[2]).unwrap();
     writeln!(output, "P3").unwrap();

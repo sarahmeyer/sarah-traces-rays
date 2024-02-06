@@ -1,6 +1,32 @@
 {
-  "aspect_ratio": 1.7777777778,
   "image_width": 1200,
-  "samples_per_pixel": 200,
-  "max_depth": 10
+  "samples_per_pixel": 50,
+  "max_depth": 4,
+  "camera": {
+    "lookfrom": {
+      "e": [
+        13.0,
+        2.0,
+        3.0
+      ]
+    },
+    "lookat": {
+      "e": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "vup": {
+      "e": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    "vfov": 20.0,
+    "aperture": 0.1,
+    "focus_dist": 10.0,
+    "aspect_ratio": 1.7777777778
+  }
 }

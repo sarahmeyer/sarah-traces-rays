@@ -28,5 +28,20 @@
     "aperture": 0.1,
     "focus_dist": 10.0,
     "aspect_ratio": 1.7777777778
+  },
+  "scene": {
+    "spheres": [
+      {
+        "center": {
+          "e": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "radius": 1.0
+      }
+    ],
+    "planes": []
   }
 }
