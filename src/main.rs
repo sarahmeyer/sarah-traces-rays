@@ -265,9 +265,9 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
                     let lambertian_settings = plane_setting.material.lambertian.as_ref().unwrap();
                     let lambertian_mat = Arc::new(Lambertian::new(lambertian_settings.albedo));
                     world.push(Box::new(Plane::new(
+                        plane_setting.normal,
                         plane_setting.point1,
                         plane_setting.point2,
-                        plane_setting.normal,
                         lambertian_mat,
                     )));
                 }
@@ -275,9 +275,9 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
                     let dielectric_settings = plane_setting.material.dielectric.as_ref().unwrap();
                     let dielectric_mat = Arc::new(Dielectric::new(dielectric_settings.ir));
                     world.push(Box::new(Plane::new(
+                        plane_setting.normal,
                         plane_setting.point1,
                         plane_setting.point2,
-                        plane_setting.normal,
                         dielectric_mat,
                     )));
                 }
