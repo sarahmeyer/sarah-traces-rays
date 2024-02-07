@@ -213,6 +213,7 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
     if scene_settings.is_some() {
         let scene_settings = scene_settings.as_ref().unwrap();
         let mut world = World::new();
+
         if scene_settings.spheres.is_some() {
             let sphere_settings = scene_settings.spheres.as_ref().unwrap();
             for sphere_setting in sphere_settings {
@@ -249,13 +250,37 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
         if scene_settings.planes.is_some() {
             let plane_settings = scene_settings.planes.as_ref().unwrap();
             for plane_setting in plane_settings {
-                let mat = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-                world.push(Box::new(Plane::new(
-                    plane_setting.point1,
-                    plane_setting.point2,
-                    plane_setting.normal,
-                    mat,
-                )));
+                if plane_setting.material.metal.is_some() {
+                    let metal_settings = plane_setting.material.metal.as_ref().unwrap();
+                    let metal_mat =
+                        Arc::new(Metal::new(metal_settings.albedo, metal_settings.fuzz));
+                    world.push(Box::new(Plane::new(
+                        plane_setting.normal,
+                        plane_setting.point1,
+                        plane_setting.point2,
+                        metal_mat,
+                    )));
+                }
+                if plane_setting.material.lambertian.is_some() {
+                    let lambertian_settings = plane_setting.material.lambertian.as_ref().unwrap();
+                    let lambertian_mat = Arc::new(Lambertian::new(lambertian_settings.albedo));
+                    world.push(Box::new(Plane::new(
+                        plane_setting.point1,
+                        plane_setting.point2,
+                        plane_setting.normal,
+                        lambertian_mat,
+                    )));
+                }
+                if plane_setting.material.dielectric.is_some() {
+                    let dielectric_settings = plane_setting.material.dielectric.as_ref().unwrap();
+                    let dielectric_mat = Arc::new(Dielectric::new(dielectric_settings.ir));
+                    world.push(Box::new(Plane::new(
+                        plane_setting.point1,
+                        plane_setting.point2,
+                        plane_setting.normal,
+                        dielectric_mat,
+                    )));
+                }
             }
         }
         world
@@ -292,7 +317,7 @@ fn main() {
     writeln!(output, "255").unwrap();
 
     for j in (0..image_height).rev() {
-        eprintln!("Scanlines remaining: {}", j + 1);
+        eprint!("\rScanlines remaining: {}", j + 1);
 
         let scanline: Vec<Color> = (0..preset.image_width)
             .into_par_iter()
@@ -324,5 +349,5 @@ fn main() {
             .unwrap();
         }
     }
-    eprintln!("Done.");
+    eprintln!();
 }
