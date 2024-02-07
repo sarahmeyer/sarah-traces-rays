@@ -37,10 +37,10 @@ struct Preset {
 }
 
 #[derive(Deserialize)]
-enum MaterialSettings {
-    Dielectric(Dielectric),
-    Lambertian(Lambertian),
-    Metal(Metal),
+struct MaterialSettings {
+    dielectric: Option<Dielectric>,
+    lambertian: Option<Lambertian>,
+    metal: Option<Metal>,
 }
 
 #[derive(Deserialize)]
@@ -53,7 +53,7 @@ struct SceneSettings {
 struct SphereSettings {
     center: Point3,
     radius: f64,
-    // material: MaterialSettings,
+    material: MaterialSettings,
 }
 
 #[derive(Deserialize)]
@@ -190,13 +190,6 @@ fn random_scene() -> World {
     // world.push(Box::new(sphere1));
     // world.push(Box::new(sphere2));
     // world.push(Box::new(sphere3));
-    // let rect_mat1 = Arc::new(Dielectric::new(1.5));
-    // let rect = RectangleXY::new(
-    //     Vec3::new(0.0, 0.0, 0.0),
-    //     Vec3::new(5.0, 5.0, 5.0),
-    //     rect_mat1,
-    // );
-    // world.push(Box::new(rect));
 
     // let mat1 = Arc::new(Dielectric::new(1.5));
     // let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
@@ -223,11 +216,45 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
         if scene_settings.spheres.is_some() {
             let sphere_settings = scene_settings.spheres.as_ref().unwrap();
             for sphere_setting in sphere_settings {
-                let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-                world.push(Box::new(Sphere::new(
-                    sphere_setting.center,
-                    sphere_setting.radius,
-                    mat2,
+                if sphere_setting.material.metal.is_some() {
+                    let metal_settings = sphere_setting.material.metal.as_ref().unwrap();
+                    let metal_mat =
+                        Arc::new(Metal::new(metal_settings.albedo, metal_settings.fuzz));
+                    world.push(Box::new(Sphere::new(
+                        sphere_setting.center,
+                        sphere_setting.radius,
+                        metal_mat,
+                    )));
+                }
+                if sphere_setting.material.lambertian.is_some() {
+                    let lambertian_settings = sphere_setting.material.lambertian.as_ref().unwrap();
+                    let lambertian_mat = Arc::new(Lambertian::new(lambertian_settings.albedo));
+                    world.push(Box::new(Sphere::new(
+                        sphere_setting.center,
+                        sphere_setting.radius,
+                        lambertian_mat,
+                    )));
+                }
+                if sphere_setting.material.dielectric.is_some() {
+                    let dielectric_settings = sphere_setting.material.dielectric.as_ref().unwrap();
+                    let dielectric_mat = Arc::new(Dielectric::new(dielectric_settings.ir));
+                    world.push(Box::new(Sphere::new(
+                        sphere_setting.center,
+                        sphere_setting.radius,
+                        dielectric_mat,
+                    )));
+                }
+            }
+        }
+        if scene_settings.planes.is_some() {
+            let plane_settings = scene_settings.planes.as_ref().unwrap();
+            for plane_setting in plane_settings {
+                let mat = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+                world.push(Box::new(Plane::new(
+                    plane_setting.point1,
+                    plane_setting.point2,
+                    plane_setting.normal,
+                    mat,
                 )));
             }
         }
