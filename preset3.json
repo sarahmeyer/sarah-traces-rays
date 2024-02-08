@@ -1,5 +1,5 @@
 {
-  "image_width": 1200,
+  "image_width": 300,
   "samples_per_pixel": 50,
   "max_depth": 4,
   "camera": {

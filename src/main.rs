@@ -83,6 +83,7 @@ fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
         (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * background_color
     }
 }
+
 fn random_scene() -> World {
     let mut rng = rand::thread_rng();
     let mut world = World::new();
@@ -214,11 +215,9 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
         let scene_settings = scene_settings.as_ref().unwrap();
         let mut world = World::new();
 
-        if scene_settings.spheres.is_some() {
-            let sphere_settings = scene_settings.spheres.as_ref().unwrap();
+        if let Some(sphere_settings) = scene_settings.spheres.as_ref() {
             for sphere_setting in sphere_settings {
-                if sphere_setting.material.metal.is_some() {
-                    let metal_settings = sphere_setting.material.metal.as_ref().unwrap();
+                if let Some(metal_settings) = sphere_setting.material.metal.as_ref() {
                     let metal_mat =
                         Arc::new(Metal::new(metal_settings.albedo, metal_settings.fuzz));
                     world.push(Box::new(Sphere::new(
@@ -227,8 +226,7 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
                         metal_mat,
                     )));
                 }
-                if sphere_setting.material.lambertian.is_some() {
-                    let lambertian_settings = sphere_setting.material.lambertian.as_ref().unwrap();
+                if let Some(lambertian_settings) = sphere_setting.material.lambertian.as_ref() {
                     let lambertian_mat = Arc::new(Lambertian::new(lambertian_settings.albedo));
                     world.push(Box::new(Sphere::new(
                         sphere_setting.center,
@@ -236,8 +234,7 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
                         lambertian_mat,
                     )));
                 }
-                if sphere_setting.material.dielectric.is_some() {
-                    let dielectric_settings = sphere_setting.material.dielectric.as_ref().unwrap();
+                if let Some(dielectric_settings) = sphere_setting.material.dielectric.as_ref() {
                     let dielectric_mat = Arc::new(Dielectric::new(dielectric_settings.ir));
                     world.push(Box::new(Sphere::new(
                         sphere_setting.center,
@@ -247,11 +244,9 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
                 }
             }
         }
-        if scene_settings.planes.is_some() {
-            let plane_settings = scene_settings.planes.as_ref().unwrap();
+        if let Some(plane_settings) = scene_settings.planes.as_ref() {
             for plane_setting in plane_settings {
-                if plane_setting.material.metal.is_some() {
-                    let metal_settings = plane_setting.material.metal.as_ref().unwrap();
+                if let Some(metal_settings) = plane_setting.material.metal.as_ref() {
                     let metal_mat =
                         Arc::new(Metal::new(metal_settings.albedo, metal_settings.fuzz));
                     world.push(Box::new(Plane::new(
@@ -261,8 +256,7 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
                         metal_mat,
                     )));
                 }
-                if plane_setting.material.lambertian.is_some() {
-                    let lambertian_settings = plane_setting.material.lambertian.as_ref().unwrap();
+                if let Some(lambertian_settings) = plane_setting.material.lambertian.as_ref() {
                     let lambertian_mat = Arc::new(Lambertian::new(lambertian_settings.albedo));
                     world.push(Box::new(Plane::new(
                         plane_setting.normal,
@@ -271,8 +265,7 @@ fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> Worl
                         lambertian_mat,
                     )));
                 }
-                if plane_setting.material.dielectric.is_some() {
-                    let dielectric_settings = plane_setting.material.dielectric.as_ref().unwrap();
+                if let Some(dielectric_settings) = plane_setting.material.dielectric.as_ref() {
                     let dielectric_mat = Arc::new(Dielectric::new(dielectric_settings.ir));
                     world.push(Box::new(Plane::new(
                         plane_setting.normal,
@@ -306,7 +299,6 @@ fn main() {
     let image_height: u64 = ((preset.image_width as f64) / preset.camera.aspect_ratio) as u64;
 
     // World
-    // let world = random_scene();
     let world = construct_scene_from_settings(&preset.scene);
 
     let cam = Camera::new(&preset.camera);
