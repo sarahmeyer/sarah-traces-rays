@@ -1,4 +1,5 @@
 use rand::Rng;
+use serde::Deserialize;
 
 use super::hit::HitRecord;
 use super::ray::Ray;
@@ -8,8 +9,9 @@ pub trait Scatter: Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
 }
 
+#[derive(Deserialize)]
 pub struct Lambertian {
-    albedo: Color,
+    pub albedo: Color,
 }
 
 impl Lambertian {
@@ -30,9 +32,10 @@ impl Scatter for Lambertian {
     }
 }
 
+#[derive(Deserialize)]
 pub struct Metal {
-    albedo: Color,
-    fuzz: f64,
+    pub albedo: Color,
+    pub fuzz: f64,
 }
 
 impl Metal {
@@ -54,9 +57,10 @@ impl Scatter for Metal {
     }
 }
 
+#[derive(Deserialize)]
 pub struct Dielectric {
     // index of refraction
-    ir: f64,
+    pub ir: f64,
 }
 
 impl Dielectric {

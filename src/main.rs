@@ -1,16 +1,16 @@
 mod camera;
 mod hit;
 mod material;
-mod planes;
+mod plane;
 mod ray;
 mod sphere;
 mod vec;
 
 use camera::CameraSettings;
-use planes::Plane;
+use plane::Plane;
 use rand::Rng;
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::io::BufReader;
 use std::io::Write;
 use std::{env, fs::File};
@@ -26,13 +26,42 @@ use camera::Camera;
 use hit::{Hit, World};
 use sphere::Sphere;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Deserialize)]
 struct Preset {
     // aspect_ratio: f64,
     image_width: u64,
     samples_per_pixel: u64,
     max_depth: u64,
     camera: CameraSettings,
+    scene: Option<SceneSettings>,
+}
+
+#[derive(Deserialize)]
+struct MaterialSettings {
+    dielectric: Option<Dielectric>,
+    lambertian: Option<Lambertian>,
+    metal: Option<Metal>,
+}
+
+#[derive(Deserialize)]
+struct SceneSettings {
+    spheres: Option<Vec<SphereSettings>>,
+    planes: Option<Vec<PlaneSettings>>,
+}
+
+#[derive(Deserialize)]
+struct SphereSettings {
+    center: Point3,
+    radius: f64,
+    material: MaterialSettings,
+}
+
+#[derive(Deserialize)]
+struct PlaneSettings {
+    point1: Point3,
+    point2: Point3,
+    normal: Vec3,
+    material: MaterialSettings,
 }
 
 fn ray_color(r: &Ray, world: &World, depth: u64) -> Color {
@@ -161,13 +190,6 @@ fn random_scene() -> World {
     // world.push(Box::new(sphere1));
     // world.push(Box::new(sphere2));
     // world.push(Box::new(sphere3));
-    // let rect_mat1 = Arc::new(Dielectric::new(1.5));
-    // let rect = RectangleXY::new(
-    //     Vec3::new(0.0, 0.0, 0.0),
-    //     Vec3::new(5.0, 5.0, 5.0),
-    //     rect_mat1,
-    // );
-    // world.push(Box::new(rect));
 
     // let mat1 = Arc::new(Dielectric::new(1.5));
     // let mat2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
@@ -187,6 +209,86 @@ fn random_scene() -> World {
     world
 }
 
+fn construct_scene_from_settings(scene_settings: &Option<SceneSettings>) -> World {
+    if scene_settings.is_some() {
+        let scene_settings = scene_settings.as_ref().unwrap();
+        let mut world = World::new();
+
+        if scene_settings.spheres.is_some() {
+            let sphere_settings = scene_settings.spheres.as_ref().unwrap();
+            for sphere_setting in sphere_settings {
+                if sphere_setting.material.metal.is_some() {
+                    let metal_settings = sphere_setting.material.metal.as_ref().unwrap();
+                    let metal_mat =
+                        Arc::new(Metal::new(metal_settings.albedo, metal_settings.fuzz));
+                    world.push(Box::new(Sphere::new(
+                        sphere_setting.center,
+                        sphere_setting.radius,
+                        metal_mat,
+                    )));
+                }
+                if sphere_setting.material.lambertian.is_some() {
+                    let lambertian_settings = sphere_setting.material.lambertian.as_ref().unwrap();
+                    let lambertian_mat = Arc::new(Lambertian::new(lambertian_settings.albedo));
+                    world.push(Box::new(Sphere::new(
+                        sphere_setting.center,
+                        sphere_setting.radius,
+                        lambertian_mat,
+                    )));
+                }
+                if sphere_setting.material.dielectric.is_some() {
+                    let dielectric_settings = sphere_setting.material.dielectric.as_ref().unwrap();
+                    let dielectric_mat = Arc::new(Dielectric::new(dielectric_settings.ir));
+                    world.push(Box::new(Sphere::new(
+                        sphere_setting.center,
+                        sphere_setting.radius,
+                        dielectric_mat,
+                    )));
+                }
+            }
+        }
+        if scene_settings.planes.is_some() {
+            let plane_settings = scene_settings.planes.as_ref().unwrap();
+            for plane_setting in plane_settings {
+                if plane_setting.material.metal.is_some() {
+                    let metal_settings = plane_setting.material.metal.as_ref().unwrap();
+                    let metal_mat =
+                        Arc::new(Metal::new(metal_settings.albedo, metal_settings.fuzz));
+                    world.push(Box::new(Plane::new(
+                        plane_setting.normal,
+                        plane_setting.point1,
+                        plane_setting.point2,
+                        metal_mat,
+                    )));
+                }
+                if plane_setting.material.lambertian.is_some() {
+                    let lambertian_settings = plane_setting.material.lambertian.as_ref().unwrap();
+                    let lambertian_mat = Arc::new(Lambertian::new(lambertian_settings.albedo));
+                    world.push(Box::new(Plane::new(
+                        plane_setting.normal,
+                        plane_setting.point1,
+                        plane_setting.point2,
+                        lambertian_mat,
+                    )));
+                }
+                if plane_setting.material.dielectric.is_some() {
+                    let dielectric_settings = plane_setting.material.dielectric.as_ref().unwrap();
+                    let dielectric_mat = Arc::new(Dielectric::new(dielectric_settings.ir));
+                    world.push(Box::new(Plane::new(
+                        plane_setting.normal,
+                        plane_setting.point1,
+                        plane_setting.point2,
+                        dielectric_mat,
+                    )));
+                }
+            }
+        }
+        world
+    } else {
+        random_scene()
+    }
+}
+
 fn load_preset_from_file(path_to_file: &str) -> Preset {
     let file = File::open(path_to_file).unwrap();
     let reader = BufReader::new(file);
@@ -204,9 +306,10 @@ fn main() {
     let image_height: u64 = ((preset.image_width as f64) / preset.camera.aspect_ratio) as u64;
 
     // World
-    let world = random_scene();
+    // let world = random_scene();
+    let world = construct_scene_from_settings(&preset.scene);
 
-    let cam = Camera::new(preset.camera);
+    let cam = Camera::new(&preset.camera);
 
     let mut output = File::create(&args[2]).unwrap();
     writeln!(output, "P3").unwrap();
@@ -214,7 +317,7 @@ fn main() {
     writeln!(output, "255").unwrap();
 
     for j in (0..image_height).rev() {
-        eprintln!("Scanlines remaining: {}", j + 1);
+        eprint!("\rScanlines remaining: {}", j + 1);
 
         let scanline: Vec<Color> = (0..preset.image_width)
             .into_par_iter()
@@ -246,5 +349,5 @@ fn main() {
             .unwrap();
         }
     }
-    eprintln!("Done.");
+    eprintln!();
 }

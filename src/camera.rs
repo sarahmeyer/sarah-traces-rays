@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use super::ray::Ray;
 use super::vec::{Point3, Vec3};
@@ -13,7 +13,7 @@ pub struct Camera {
     lens_radius: f64,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize)]
 pub struct CameraSettings {
     lookfrom: Point3,
     lookat: Point3,
@@ -25,7 +25,7 @@ pub struct CameraSettings {
 }
 
 impl Camera {
-    pub fn new(settings: CameraSettings) -> Camera {
+    pub fn new(settings: &CameraSettings) -> Camera {
         // Vertical field-of-view in degrees
         let theta = std::f64::consts::PI / 180.0 * settings.vfov;
         let viewport_height = 2.0 * (theta / 2.0).tan();

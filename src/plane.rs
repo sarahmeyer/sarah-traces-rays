@@ -1,4 +1,4 @@
-use std::{num::NonZeroI128, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     hit::{Hit, HitRecord},
@@ -63,12 +63,12 @@ impl Hit for Plane {
 
         let frac_top = -scalar(self.normal * r.origin() - self.normal * self.point1);
         let frac_bottom = scalar(self.normal * r.direction());
-        let root = frac_top / frac_bottom;
 
         // Discard bad solutions
         if frac_bottom == 0.0 {
             return None;
         }
+        let root = frac_top / frac_bottom;
         if root < t_min || root > t_max {
             return None;
         }
